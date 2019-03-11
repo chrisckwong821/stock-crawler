@@ -7,7 +7,7 @@ import datetime
 
 def crawler():
     #read in stock code
-    listofstocks = list(pd.read_csv('ds_list20170831.csv')['Stock Code'])
+    listofstocks = list(pd.read_csv('ds_list2010311.csv')['Stock Code'])
     ticker = []
     #format it for crawler
     for i in listofstocks:
