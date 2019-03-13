@@ -1,13 +1,16 @@
 import pandas as pd
 import time
-import re
+import re, os
 from urllib.request import urlopen, Request, URLError
 import calendar
 import datetime
 
-def crawler():
+
+def crawler(fulllist=False):
+    a['shortsellable','fulllist']
+    print(a[fulllist])
     #read in stock code
-    listofstocks = list(pd.read_csv('ds_list2010311.csv')['Stock Code'])
+    listofstocks = list(pd.read_csv('ds_list20190311.csv',index_col=False)['Stock Code'])
     ticker = []
     #format it for crawler
     for i in listofstocks:
@@ -17,6 +20,10 @@ def crawler():
         else:
             i = i + '.HK'
         ticker.append(i)
+    if fulllist:
+        df = pd.read_csv('Fulllist.csv',usecols=['Stock Code','Category'],dtype='str').dropna()
+        full = list(df.loc[df['Category'] == 'Equity']['Stock Code'])
+        ticker = [i[1:]+'.HK' for i in full]
     return ticker
 
 crumble_link = 'https://finance.yahoo.com/quote/{0}/history?p={0}'
@@ -51,20 +58,21 @@ def download_quote(symbol, date_from, date_to,events):
             #####store the response into a csv file
             response = urlopen(r)
             text = response.read()
-            with open('{}.csv'.format(symbol), 'wb') as f:
+            with open(os.path.join('stock_data/{}.csv'.format(symbol)), 'wb') as f:
                 f.write(text)
             print("{} downloaded".format(symbol))
             return b''
         except URLError:
             print ("{} failed at attempt # {}".format(symbol, attempts))
             attempts += 1
-            time.sleep(2*attempts)
+            time.sleep(2)
     return b''
     
 if __name__ == '__main__':
-    start_date = '2015-09-03'
-    end_date = '2017-09-03'
+    now = datetime.datetime.now()
+    end_date = now.strftime ("%Y-%m-%d")
+    start_date = (now - datetime.timedelta(days=90)).strftime ("%Y-%m-%d")
     event = 'history'
-    ticker = crawler()
+    ticker = crawler(fulllist=True)
     for i in ticker:
         download_quote(i,start_date,end_date,event)
